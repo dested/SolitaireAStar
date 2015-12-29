@@ -67,19 +67,75 @@ namespace SolitareAStar
 
         private static bool cardFits(Card top, Card bottom)
         {
-            return top.Number == bottom.Number - 1 && top.Face != bottom.Face;
+            return top.Number == bottom.Number - 1 && top.Color != bottom.Color;
+        }
+        private static bool cardFitsTop(Card top, Card bottom)
+        {
+            return top.Number == bottom.Number + 1 && top.Type == bottom.Type;
         }
 
         private static List<SolitareState> tryMoveToTop(SolitareState solitareState)
         {
             List<SolitareState> states = new List<SolitareState>();
+            for (int index = 0; index < solitareState.Piles.Count; index++)
+            {
+                var pile = solitareState.Piles[index];
+                var l = pile.Last();
+                switch (l.Type)
+                {
+                    case CardType.Spade:
+                        if (cardFitsTop(solitareState.TopSpades.Last(), l))
+                        {
+                            var s = new SolitareState(solitareState);
+                            var p = s.Piles[index][pile.Count - 1];
+                            s.Piles[index].Remove(p);
+                            s.TopSpades.Add(p);
+                            states.Add(s);
+                        }
+                        break;
+                    case CardType.Club:
+                        if (cardFitsTop(solitareState.TopClubs.Last(), l))
+                        {
+                            var s = new SolitareState(solitareState);
+                            var p = s.Piles[index][pile.Count - 1];
+                            s.Piles[index].Remove(p);
+                            s.TopClubs.Add(p);
+                            states.Add(s);
+                        }
+                        break;
+                    case CardType.Heart:
+                        if (cardFitsTop(solitareState.TopHearts.Last(), l))
+                        {
+                            var s = new SolitareState(solitareState);
+                            var p = s.Piles[index][pile.Count - 1];
+                            s.Piles[index].Remove(p);
+                            s.TopHearts.Add(p);
+                            states.Add(s);
+                        }
+                        break;
+                    case CardType.Diamond:
+                        if (cardFitsTop(solitareState.TopDiamonds.Last(), l))
+                        {
+                            var s = new SolitareState(solitareState);
+                            var p = s.Piles[index][pile.Count - 1];
+                            s.Piles[index].Remove(p);
+                            s.TopDiamonds.Add(p);
+                            states.Add(s);
+                        }
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
             return states;
         }
+
         private static List<SolitareState> tryPopDeck(SolitareState solitareState)
         {
             List<SolitareState> states = new List<SolitareState>();
             return states;
         }
+
         private static List<SolitareState> tryMovePiles(SolitareState solitareState)
         {
             List<SolitareState> states = new List<SolitareState>();
@@ -108,16 +164,15 @@ namespace SolitareAStar
             return initialState;
         }
 
-        static List<Card> NewDeck()
+        private static List<Card> NewDeck()
         {
             List<Card> cards = new List<Card>();
             for (int i = 0; i < 4; i++)
             {
                 for (int c = 1; c <= 13; c++)
                 {
-                    cards.Add(new Card(CardFace.Down, (CardType)i, c));
+                    cards.Add(new Card(CardFace.Down, (CardType) i, c));
                 }
-
             }
             return cards;
         }
@@ -125,7 +180,6 @@ namespace SolitareAStar
 
     public class SolitareState
     {
-
         public SolitareState()
         {
             TopHearts = new List<Card>();
@@ -141,7 +195,6 @@ namespace SolitareAStar
             {
                 Piles.Add(new List<Card>());
             }
-
         }
 
         public SolitareState(SolitareState state)
@@ -163,6 +216,7 @@ namespace SolitareAStar
         public List<Card> Deck { get; set; }
         public List<Card> DeckDiscard { get; set; }
         public List<List<Card>> Piles { get; set; }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -215,13 +269,16 @@ namespace SolitareAStar
 
     public enum CardColor
     {
-        Red, Black
+        Red,
+        Black
     }
 
     public enum CardFace
     {
-        Up, Down
+        Up,
+        Down
     }
+
     public enum CardType
     {
         Spade,
