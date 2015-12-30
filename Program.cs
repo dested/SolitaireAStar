@@ -41,7 +41,7 @@ namespace SolitareAStar
 
             SortedList<int, SolitareState> newStates = new SortedList<int, SolitareState>(new DuplicateKeyComparer<int>());
 
-            newStates.Add(initialState.GetScore(),initialState);
+            newStates.Add(initialState.GetScore(), initialState);
             int collision = 0;
             int iterations = 0;
             while (newStates.Count > 0)
@@ -68,7 +68,7 @@ namespace SolitareAStar
                     Console.WriteLine(solitareState.ToString());
 
                 }
-                newStates.RemoveAt(newStates.Count-1);
+                newStates.RemoveAt(newStates.Count - 1);
 
                 var solitareStates = oneTick(solitareState);
                 var count = solitareStates.Count;
@@ -80,14 +80,14 @@ namespace SolitareAStar
                     if (!closedSet.Contains(item))
                     {
                         closedSet.Add(item);
-                        newStates.Add(state.GetScore(),state);
+                        newStates.Add(state.GetScore(), state);
                     }
                     else
                     {
                         collision++;
                     }
                 }
-                
+
             }
             Console.WriteLine("LOST " + (DateTime.Now - start));
             Console.WriteLine("Iterations per second:" + (iterations / (DateTime.Now - start).TotalMilliseconds) * 1000);
@@ -437,29 +437,31 @@ namespace SolitareAStar
 
         public SolitareState(SolitareState state)
         {
-            TopHearts = new List<Card>(Copy(state.TopHearts));
-            TopDiamonds = new List<Card>(Copy(state.TopDiamonds));
-            TopClubs = new List<Card>(Copy(state.TopClubs));
-            TopSpades = new List<Card>(Copy(state.TopSpades));
+            TopHearts = (Copy(state.TopHearts));
+            TopDiamonds = (Copy(state.TopDiamonds));
+            TopClubs = (Copy(state.TopClubs));
+            TopSpades = (Copy(state.TopSpades));
 
-            Deck = new List<Card>(Copy(state.Deck));
-            DeckDiscard = new List<Card>(Copy(state.DeckDiscard));
+            Deck = (Copy(state.Deck));
+            DeckDiscard = (Copy(state.DeckDiscard));
             Piles = new List<Card>[7];
 
-            Piles[0] = new List<Card>(Copy(state.Piles[0]));
-            Piles[1] = new List<Card>(Copy(state.Piles[1]));
-            Piles[2] = new List<Card>(Copy(state.Piles[2]));
-            Piles[3] = new List<Card>(Copy(state.Piles[3]));
-            Piles[4] = new List<Card>(Copy(state.Piles[4]));
-            Piles[5] = new List<Card>(Copy(state.Piles[5]));
-            Piles[6] = new List<Card>(Copy(state.Piles[6]));
+            Piles[0] = (Copy(state.Piles[0]));
+            Piles[1] = (Copy(state.Piles[1]));
+            Piles[2] = (Copy(state.Piles[2]));
+            Piles[3] = (Copy(state.Piles[3]));
+            Piles[4] = (Copy(state.Piles[4]));
+            Piles[5] = (Copy(state.Piles[5]));
+            Piles[6] = (Copy(state.Piles[6]));
 
             ResetCount = state.ResetCount;
         }
 
         public static List<Card> Copy(List<Card> c)
         {
-            List<Card> cc = new List<Card>(c.Count);
+            //            Card[] cc = new Card[c.Count];
+            List<Card> cc = new List<Card>();
+
             for (int i = 0, count = c.Count; i < count; i++)
             {
                 cc.Add(Card.cards[(c[i].RealValue)]);
@@ -709,10 +711,10 @@ namespace SolitareAStar
                     if (items2[index2].Face == CardFace.Down)
                         cd++;
                 }
-                 
+
             }
             return cd;
 
         }
-     }
+    }
 }
