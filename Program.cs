@@ -60,7 +60,7 @@ namespace SolitareAStar
 
 
                 iterations++;
-                if (iterations % 5000 == 0)
+                if (iterations % 50000 == 0)
                 {
                     Console.WriteLine(newStates.Count + " " + iterations + " " + closedSet.Count + " " + collision);
 
