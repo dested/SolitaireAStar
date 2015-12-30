@@ -412,17 +412,17 @@ namespace SolitareAStar
 
         public SolitareState(SolitareState state)
         {
-            TopHearts = new List<Card>(state.TopHearts.Select(a => Card.Find(a.Face, a.Type, a.Number)));
-            TopDiamonds = new List<Card>(state.TopDiamonds.Select(a => Card.Find(a.Face, a.Type, a.Number)));
-            TopClubs = new List<Card>(state.TopClubs.Select(a => Card.Find(a.Face, a.Type, a.Number)));
-            TopSpades = new List<Card>(state.TopSpades.Select(a => Card.Find(a.Face, a.Type, a.Number)));
+            TopHearts = new List<Card>(state.TopHearts.Select(a => Card.Find(a.RealValue())));
+            TopDiamonds = new List<Card>(state.TopDiamonds.Select(a => Card.Find(a.RealValue())));
+            TopClubs = new List<Card>(state.TopClubs.Select(a => Card.Find(a.RealValue())));
+            TopSpades = new List<Card>(state.TopSpades.Select(a => Card.Find(a.RealValue())));
 
-            Deck = new List<Card>(state.Deck.Select(a => Card.Find(a.Face, a.Type, a.Number)));
-            DeckDiscard = new List<Card>(state.DeckDiscard.Select(a => Card.Find(a.Face, a.Type, a.Number)));
+            Deck = new List<Card>(state.Deck.Select(a => Card.Find(a.RealValue())));
+            DeckDiscard = new List<Card>(state.DeckDiscard.Select(a => Card.Find(a.RealValue())));
             Piles = new List<Card>[7];
             for (int i = 0; i < 7; i++)
             {
-                Piles[i] = new List<Card>(state.Piles[i].Select(a => Card.Find(a.Face, a.Type, a.Number)));
+                Piles[i] = new List<Card>(state.Piles[i].Select(a => Card.Find(a.RealValue())));
             }
 
             ResetCount = state.ResetCount;
@@ -441,13 +441,13 @@ namespace SolitareAStar
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("Top Hearts: " + DumpList(TopHearts));
-            sb.AppendLine("Top Diamonds: " + DumpList(TopDiamonds));
-            sb.AppendLine("Top Spades: " + DumpList(TopSpades));
-            sb.AppendLine("Top Clubs: " + DumpList(TopClubs));
+            sb.AppendLine("Top H: " + DumpList(TopHearts));
+            sb.AppendLine("Top D: " + DumpList(TopDiamonds));
+            sb.AppendLine("Top S: " + DumpList(TopSpades));
+            sb.AppendLine("Top C: " + DumpList(TopClubs));
             sb.AppendLine();
             sb.AppendLine("Deck: " + DumpList(Deck));
-            sb.AppendLine("DeckDiscard: " + DumpList(DeckDiscard));
+            sb.AppendLine("Discard: " + DumpList(DeckDiscard));
             sb.AppendLine("Piles: ");
             foreach (var pile in Piles)
             {
@@ -495,34 +495,8 @@ namespace SolitareAStar
 
             return ComputeHash(bytes);
         }
-        static Dictionary<int, char> c = new Dictionary<int, char>()
-        {
-        };
+      
 
-        static SolitareState()
-        {
-            var ind = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                c[ind] = i.ToString()[0];
-                ind++;
-            }
-            for (int i = 0; i < 26; i++)
-            {
-                c[ind] = (char)(((int)'a') + i);
-                ind++;
-            }
-            for (int i = 0; i < 26; i++)
-            {
-                c[ind] = (char)(((int)'A') + i);
-                ind++;
-            }
-            for (int i = 0; i < 10; i++)
-            {
-                c[ind] = (char)(((int)'!') + i);
-                ind++;
-            }
-        }
         private string DumpList(List<Card> cards)
         {
             if (cards.Count == 0) return string.Empty;
@@ -533,15 +507,36 @@ namespace SolitareAStar
             {
                 if (card.Face == CardFace.Down)
                 {
-                    sb.Append("Down, ");
+                    sb.Append("__ ");
                 }
                 else
                 {
-                    sb.Append(card.Number + " " + card.Type.ToString() + ", ");
+                    sb.Append(NumToK(card.Number) + "" + card.Type.ToString()[0] + " ");
                 }
             }
-            var s = sb.ToString();
-            return s.Substring(0, s.Length - 2);
+            return sb.ToString();
+        }
+
+        public string NumToK(int number)
+        {
+            switch (number)
+            {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                    return number.ToString();
+                case 11:return "J";
+                case 12:return "Q";
+                case 13: return "K";
+            }
+            return "";
         }
 
         private void DumpFastList(List<Card> cards, byte[] bytes, ref int bInd)
@@ -566,6 +561,7 @@ namespace SolitareAStar
         private byte rv;
         static Card()
         {
+            cards=new Card[4*13*2+1];
             for (int i = 0; i < 4; i++)
             {
                 for (int c = 1; c <= 13; c++)
@@ -585,11 +581,15 @@ namespace SolitareAStar
             }
         }
 
-        private static Dictionary<byte, Card> cards = new Dictionary<byte, Card>();
+        private static Card[] cards;
 
         public static Card Find(CardFace face, CardType cardType, int number)
         {
-            return cards[(byte) ((number + ((int) cardType*13)) + (face == CardFace.Down ? 52 : 0))];
+            return cards[(byte)((number + ((int)cardType * 13)) + (face == CardFace.Down ? 52 : 0))];
+        }
+        public static Card Find(byte val)
+        {
+            return cards[val];
         }
 
         public Card(CardFace face, CardType cardType, int number)
