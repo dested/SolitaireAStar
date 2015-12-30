@@ -95,6 +95,10 @@ namespace SolitareAStar
                 if (cardFits(pile.FastLastOrDefault(), topCard))
                 {
                     var s = new SolitareState(solitareState);
+
+                    s.CopyDiscard();
+                    s.CopyPile(index);
+
                     var top = Utilities.RemoveLast(ref s.DeckDiscard);
                     Utilities.Add(ref s.Piles[index], top);
                     cache.Add(s);
@@ -136,6 +140,8 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyPile(index);
+                            s.CopyTopSpades();
 
                             var p = Utilities.RemoveLast(ref s.Piles[index]);
                             var items = s.Piles[index];
@@ -152,6 +158,9 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopClubs.FastLastOrDefault(), CardType.Club, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyPile(index);
+                            s.CopyTopClubs();
+
                             var p = Utilities.RemoveLast(ref s.Piles[index]);
                             var items = s.Piles[index];
                             if (items.Length > 0)
@@ -168,6 +177,9 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyPile(index);
+                            s.CopyTopHearts();
+
                             var p = Utilities.RemoveLast(ref s.Piles[index]);
                             var items = s.Piles[index];
                             if (items.Length > 0)
@@ -184,6 +196,9 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyPile(index);
+                            s.CopyTopDiamonds();
+
                             var p = Utilities.RemoveLast(ref s.Piles[index]);
                             var items = s.Piles[index];
                             if (items.Length > 0)
@@ -209,6 +224,9 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyDiscard();
+                            s.CopyTopSpades();
+
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
                             Utilities.Add(ref s.TopSpades, p);
                             cache.Add(s);
@@ -218,6 +236,8 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopClubs.FastLastOrDefault(), CardType.Club, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyDiscard();
+                            s.CopyTopClubs();
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
                             Utilities.Add(ref s.TopClubs, p);
                             cache.Add(s);
@@ -227,6 +247,8 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyDiscard();
+                            s.CopyTopHearts();
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
                             Utilities.Add(ref s.TopHearts, p);
                             cache.Add(s);
@@ -236,6 +258,8 @@ namespace SolitareAStar
                         if (cardFitsTop(solitareState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
                         {
                             var s = new SolitareState(solitareState);
+                            s.CopyDiscard();
+                            s.CopyTopDiamonds();
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
                             Utilities.Add(ref s.TopDiamonds, p);
                             cache.Add(s);
@@ -253,6 +277,8 @@ namespace SolitareAStar
             if (solitareState.Deck.Length > 0)
             {
                 var s = new SolitareState(solitareState);
+                s.CopyDiscard();
+                s.CopyDeck();
                 var l = Utilities.RemoveLast(ref s.Deck);
                 Utilities.Add(ref s.DeckDiscard, l.GetFaced(CardFace.Up));
                 cache.Add(s);
@@ -260,6 +286,9 @@ namespace SolitareAStar
             else
             {
                 var s = new SolitareState(solitareState);
+                s.CopyDiscard();
+                s.CopyDeck();
+
                 s.ResetCount++;
                 for (int index = 0, c = s.DeckDiscard.Length; index < c; index++)
                 {
@@ -291,6 +320,9 @@ namespace SolitareAStar
                             if (cardFits(innerPile.FastLastOrDefault(), card))
                             {
                                 var s = new SolitareState(solitareState);
+                                s.CopyPile(index);
+                                s.CopyPile(pindex);
+
                                 var cards = s.Piles[index];
 
                                 for (int j = i, c = cards.Length; j < c; j++)
@@ -400,23 +432,27 @@ namespace SolitareAStar
 
         public SolitareState(SolitareState state)
         {
-            TopHearts = (Copy(state.TopHearts));
-            TopDiamonds = (Copy(state.TopDiamonds));
-            TopClubs = (Copy(state.TopClubs));
-            TopSpades = (Copy(state.TopSpades));
-
-            Deck = (Copy(state.Deck));
-            DeckDiscard = (Copy(state.DeckDiscard));
             Piles = new Card[7][];
 
-            Piles[0] = (Copy(state.Piles[0]));
-            Piles[1] = (Copy(state.Piles[1]));
-            Piles[2] = (Copy(state.Piles[2]));
-            Piles[3] = (Copy(state.Piles[3]));
-            Piles[4] = (Copy(state.Piles[4]));
-            Piles[5] = (Copy(state.Piles[5]));
-            Piles[6] = (Copy(state.Piles[6]));
 
+            TopHearts = state.TopHearts;
+            TopDiamonds = state.TopDiamonds;
+            TopClubs = state.TopClubs;
+            TopSpades = state.TopSpades;
+
+            Deck = state.Deck;
+            DeckDiscard = state.DeckDiscard;
+
+            Piles[0] = state.Piles[0];
+            Piles[1] = state.Piles[1];
+            Piles[2] = state.Piles[2];
+            Piles[3] = state.Piles[3];
+            Piles[4] = state.Piles[4];
+            Piles[5] = state.Piles[5];
+            Piles[6] = state.Piles[6];
+
+
+            copyState = state;
             ResetCount = state.ResetCount;
         }
 
@@ -429,6 +465,7 @@ namespace SolitareAStar
             }
             return cc;
         }
+        private SolitareState copyState;
 
         public Card[] TopHearts;
         public Card[] TopDiamonds;
@@ -559,6 +596,37 @@ namespace SolitareAStar
             }
             bytes[bInd++] = (255);
         }
+
+        public void CopyDiscard()
+        {
+            DeckDiscard = (Copy(copyState.DeckDiscard));
+        }
+        public void CopyPile(int index)
+        {
+            Piles[index] = (Copy(copyState.Piles[index]));
+        }
+
+        public void CopyTopSpades(  )
+        {
+            TopSpades = (Copy(copyState.TopSpades));
+        }
+        public void CopyTopClubs( )
+        {
+            TopClubs = (Copy(copyState.TopClubs));
+        }
+        public void CopyTopDiamonds( )
+        {
+            TopDiamonds= (Copy(copyState.TopDiamonds));
+        }
+        public void CopyTopHearts( )
+        {
+            TopHearts = (Copy(copyState.TopHearts));
+        }
+
+        public void CopyDeck()
+        {
+            Deck = (Copy(copyState.Deck));
+        }
     }
 
     public class Card
@@ -651,16 +719,16 @@ namespace SolitareAStar
 
     public static class Utilities
     {
-        public static T FastLastOrDefault<T>(this T[] items)
+        public static Card FastLastOrDefault(this Card[] items)
         {
             var count = items.Length;
-            if (count == 0) return default(T);
+            if (count == 0) return null;
             return items[count - 1];
         }
-        public static T FastLast<T>(this T[] items)
+        public static Card FastLast(this Card[] items)
         {
             var count = items.Length;
-            if (count == 0) return default(T);
+            if (count == 0) return null;
             return items[count - 1];
         }
         public static int FastSum(this Card[][] items)
