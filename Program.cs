@@ -7,7 +7,7 @@ namespace SolitaireAStar
 {
     class Program
     {
-        static Random random = new Random(16);
+        static Random random = new Random(4894);
 
         static void Main(string[] args)
         {
@@ -401,7 +401,7 @@ namespace SolitaireAStar
                     cards.Add(Card.Find(CardFace.Down, (CardType)i, c));
                 }
             }
-            //            cards = cards.OrderBy(a => random.Next()).ToList();
+//            cards = cards.OrderBy(a => random.Next()).ToList();
             return cards.ToArray();
         }
     }
@@ -442,9 +442,9 @@ namespace SolitaireAStar
             {
                 return int.MaxValue;
             }
-            _score = (c * 2) +
-                        (24 - (Deck.Length + DeckDiscard.Length)) +
-                        (21 - Piles.FastSum());
+            _score = (c * 6) +
+                        (24 - (Deck.Length + DeckDiscard.Length))*2 +
+                        (21 - Piles.FastSum())*4;
             return _score;
         }
 
@@ -804,3 +804,18 @@ namespace SolitaireAStar
     }
 
 }
+
+
+/*cache lasts
+  array of pileLasts[pileIndex]
+change top to array
+remove face?? 
+  only do it in tostring
+  try move piles issue
+    a pile should know what its lowest shown card is
+    
+try move piles 
+  array add in loop
+  
+state card copy can really be an array.copy since the values wont change in it, you just need a fresh array
+*/
