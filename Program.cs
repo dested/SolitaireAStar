@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SolitareAStar
 {
@@ -89,11 +88,11 @@ namespace SolitareAStar
 
             List<SolitareState> states = new List<SolitareState>();
             if (solitareState.DeckDiscard.Count == 0) return states;
-            var topCard = solitareState.DeckDiscard.Last();
+            var topCard = solitareState.DeckDiscard.FastLast();
             for (int index = 0; index < 7; index++)
             {
                 var pile = solitareState.Piles[index];
-                if (cardFits(pile.LastOrDefault(), topCard))
+                if (cardFits(pile.FastLastOrDefault(), topCard))
                 {
                     var s = new SolitareState(solitareState);
                     var top = s.DeckDiscard[s.DeckDiscard.Count - 1];
@@ -111,7 +110,7 @@ namespace SolitareAStar
             {
                 return bottom.Number == 13;
             }
-            return top.Number == bottom.Number + 1 && top.Color != bottom.Color;
+            return top.Color != bottom.Color && top.Number == bottom.Number + 1;
         }
         private static bool cardFitsTop(Card top, CardType type, Card bottom)
         {
@@ -133,16 +132,16 @@ namespace SolitareAStar
                 {
                     continue;
                 }
-                l = pile.Last();
+                l = pile.FastLast();
                 switch (l.Type)
                 {
                     case CardType.Spade:
-                        if (cardFitsTop(solitareState.TopSpades.LastOrDefault(), CardType.Spade, l))
+                        if (cardFitsTop(solitareState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            var ll = s.Piles[index].LastOrDefault();
+                            var ll = s.Piles[index].FastLastOrDefault();
                             if (ll != null)
                             {
                                 s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
@@ -152,12 +151,12 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Club:
-                        if (cardFitsTop(solitareState.TopClubs.LastOrDefault(), CardType.Club, l))
+                        if (cardFitsTop(solitareState.TopClubs.FastLastOrDefault(), CardType.Club, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            var ll = s.Piles[index].LastOrDefault();
+                            var ll = s.Piles[index].FastLastOrDefault();
                             if (ll != null)
                             {
                                 s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
@@ -167,12 +166,12 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Heart:
-                        if (cardFitsTop(solitareState.TopHearts.LastOrDefault(), CardType.Heart, l))
+                        if (cardFitsTop(solitareState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            var ll = s.Piles[index].LastOrDefault();
+                            var ll = s.Piles[index].FastLastOrDefault();
                             if (ll != null)
                             {
                                 s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
@@ -182,12 +181,12 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Diamond:
-                        if (cardFitsTop(solitareState.TopDiamonds.LastOrDefault(), CardType.Diamond, l))
+                        if (cardFitsTop(solitareState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            var ll = s.Piles[index].LastOrDefault();
+                            var ll = s.Piles[index].FastLastOrDefault();
                             if (ll != null)
                             {
                                 s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
@@ -202,11 +201,11 @@ namespace SolitareAStar
             }
             if (solitareState.DeckDiscard.Count > 0)
             {
-                l = solitareState.DeckDiscard.Last();
+                l = solitareState.DeckDiscard.FastLast();
                 switch (l.Type)
                 {
                     case CardType.Spade:
-                        if (cardFitsTop(solitareState.TopSpades.LastOrDefault(), CardType.Spade, l))
+                        if (cardFitsTop(solitareState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.DeckDiscard[s.DeckDiscard.Count - 1];
@@ -216,7 +215,7 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Club:
-                        if (cardFitsTop(solitareState.TopClubs.LastOrDefault(), CardType.Club, l))
+                        if (cardFitsTop(solitareState.TopClubs.FastLastOrDefault(), CardType.Club, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.DeckDiscard[s.DeckDiscard.Count - 1];
@@ -226,7 +225,7 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Heart:
-                        if (cardFitsTop(solitareState.TopHearts.LastOrDefault(), CardType.Heart, l))
+                        if (cardFitsTop(solitareState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.DeckDiscard[s.DeckDiscard.Count - 1];
@@ -236,7 +235,7 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Diamond:
-                        if (cardFitsTop(solitareState.TopDiamonds.LastOrDefault(), CardType.Diamond, l))
+                        if (cardFitsTop(solitareState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
                         {
                             var s = new SolitareState(solitareState);
                             var p = s.DeckDiscard[s.DeckDiscard.Count - 1];
@@ -259,7 +258,7 @@ namespace SolitareAStar
             if (solitareState.Deck.Count > 0)
             {
                 var s = new SolitareState(solitareState);
-                var l = s.Deck.Last();
+                var l = s.Deck.FastLast();
 
                 s.Deck.Remove(l);
                 s.DeckDiscard.Add(l.GetFaced(CardFace.Up));
@@ -298,10 +297,10 @@ namespace SolitareAStar
                             if (pindex == index) continue;
 
                             var innerPile = solitareState.Piles[pindex];
-                            if (cardFits(innerPile.LastOrDefault(), card))
+                            if (cardFits(innerPile.FastLastOrDefault(), card))
                             {
                                 var s = new SolitareState(solitareState);
-                                
+
                                 for (int j = i, c = s.Piles[index].Count; j < c; j++)
                                 {
                                     s.Piles[pindex].Add(s.Piles[index][j]);
@@ -313,7 +312,7 @@ namespace SolitareAStar
                                 }
 
 
-                                var ll = s.Piles[index].LastOrDefault();
+                                var ll = s.Piles[index].FastLastOrDefault();
                                 if (ll != null)
                                 {
                                     s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
@@ -407,7 +406,7 @@ namespace SolitareAStar
             }
             _score = (c * 2) +
                         (24 - (Deck.Count + DeckDiscard.Count)) +
-                        (21 - Piles.Sum(a => a.Count(b => b.Face == CardFace.Down)));
+                        (21 - Piles.FastSum());
             return _score;
         }
 
@@ -439,7 +438,7 @@ namespace SolitareAStar
             List<Card> cc = new List<Card>(c.Count);
             for (int i = 0, count = c.Count; i < count; i++)
             {
-                cc.Add(Card.Find(c[i].RealValue));
+                cc.Add(Card.cards[(c[i].RealValue)]);
             }
             return cc;
         }
@@ -597,16 +596,13 @@ namespace SolitareAStar
             }
         }
 
-        private static Card[] cards;
+        public static Card[] cards;
 
         public static Card Find(CardFace face, CardType cardType, int number)
         {
             return cards[(byte)((number + ((int)cardType * 13)) + (face == CardFace.Down ? 52 : 0))];
         }
-        public static Card Find(byte val)
-        {
-            return cards[val];
-        }
+
 
         public Card(CardFace face, CardType cardType, int number)
         {
@@ -661,4 +657,38 @@ namespace SolitareAStar
         Heart,
         Diamond
     }
+
+    public static class Utilities
+    {
+        public static T FastLastOrDefault<T>(this List<T> items)
+        {
+            var count = items.Count;
+            if (count == 0) return default(T);
+            return items[count - 1];
+        }
+        public static T FastLast<T>(this List<T> items)
+        {
+            var count = items.Count;
+            if (count == 0) return default(T);
+            return items[count - 1];
+        }
+        public static int FastSum(this List<Card>[] items)
+        {
+            int cd = 0;
+            var count = items.Length;
+            for (int index = 0; index < count; index++)
+            {
+                var items2 = items[index];
+                var count2 = items2.Count;
+                for (int index2 = 0; index2 < count2; index2++)
+                {
+                    if (items2[index2].Face == CardFace.Down)
+                        cd++;
+                }
+                 
+            }
+            return cd;
+
+        }
+     }
 }
