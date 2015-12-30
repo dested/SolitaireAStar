@@ -32,7 +32,8 @@ namespace SolitareAStar
                     Console.WriteLine("WON " + (DateTime.Now - start));
                     Console.WriteLine("Iterations per second:" + (iterations / (DateTime.Now - start).TotalMilliseconds) * 1000);
                     Console.WriteLine(newStates.Count + " " + closedSet.Count + " " + collision);
-                    Console.WriteLine(solitareState.ToString());
+
+                    rebuild(solitareState);
                     Console.ReadLine();
                     return;
                 }
@@ -72,6 +73,22 @@ namespace SolitareAStar
             Console.WriteLine("Iterations per second:" + (iterations / (DateTime.Now - start).TotalMilliseconds) * 1000);
             Console.WriteLine(newStates.Count + " " + iterations + " " + closedSet.Count + " " + collision);
             Console.ReadLine();
+        }
+
+        private static void rebuild(SolitareState solitareState)
+        {
+            List<SolitareState> states = new List<SolitareState>();
+            states.Add(solitareState);
+            while (solitareState.copyState != null)
+            {
+                states.Insert(0, solitareState.copyState);
+                solitareState = solitareState.copyState;
+            }
+            foreach (var state in states)
+            {
+                Console.WriteLine(state);
+                Console.ReadLine();
+            }
         }
 
         private static void oneTick(SolitareState solitareState, List<SolitareState> cache)
@@ -465,7 +482,8 @@ namespace SolitareAStar
             }
             return cc;
         }
-        private SolitareState copyState;
+
+        public SolitareState copyState;
 
         public Card[] TopHearts;
         public Card[] TopDiamonds;
