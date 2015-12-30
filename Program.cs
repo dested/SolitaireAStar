@@ -260,7 +260,7 @@ namespace SolitareAStar
             {
                 var s = new SolitareState(solitareState);
                 var l = s.Deck.Last();
-                
+
                 s.Deck.Remove(l);
                 s.DeckDiscard.Add(l.GetFaced(CardFace.Up));
                 states.Add(s);
@@ -287,7 +287,8 @@ namespace SolitareAStar
             for (int index = 0; index < 7; index++)
             {
                 var pile = solitareState.Piles[index];
-                for (int i = 1; i < pile.Count; i++)
+
+                for (int i = 1, count = pile.Count; i < count; i++)
                 {
                     var card = pile[i];
                     if (card.Face == CardFace.Up)
@@ -300,7 +301,8 @@ namespace SolitareAStar
                             if (cardFits(innerPile.LastOrDefault(), card))
                             {
                                 var s = new SolitareState(solitareState);
-                                for (int j = i; j < s.Piles[index].Count; j++)
+                                
+                                for (int j = i, c = s.Piles[index].Count; j < c; j++)
                                 {
                                     s.Piles[pindex].Add(s.Piles[index][j]);
                                 }
@@ -412,20 +414,34 @@ namespace SolitareAStar
 
         public SolitareState(SolitareState state)
         {
-            TopHearts = new List<Card>(state.TopHearts.Select(a => Card.Find(a.RealValue())));
-            TopDiamonds = new List<Card>(state.TopDiamonds.Select(a => Card.Find(a.RealValue())));
-            TopClubs = new List<Card>(state.TopClubs.Select(a => Card.Find(a.RealValue())));
-            TopSpades = new List<Card>(state.TopSpades.Select(a => Card.Find(a.RealValue())));
+            TopHearts = new List<Card>(Copy(state.TopHearts));
+            TopDiamonds = new List<Card>(Copy(state.TopDiamonds));
+            TopClubs = new List<Card>(Copy(state.TopClubs));
+            TopSpades = new List<Card>(Copy(state.TopSpades));
 
-            Deck = new List<Card>(state.Deck.Select(a => Card.Find(a.RealValue())));
-            DeckDiscard = new List<Card>(state.DeckDiscard.Select(a => Card.Find(a.RealValue())));
+            Deck = new List<Card>(Copy(state.Deck));
+            DeckDiscard = new List<Card>(Copy(state.DeckDiscard));
             Piles = new List<Card>[7];
-            for (int i = 0; i < 7; i++)
-            {
-                Piles[i] = new List<Card>(state.Piles[i].Select(a => Card.Find(a.RealValue())));
-            }
+
+            Piles[0] = new List<Card>(Copy(state.Piles[0]));
+            Piles[1] = new List<Card>(Copy(state.Piles[1]));
+            Piles[2] = new List<Card>(Copy(state.Piles[2]));
+            Piles[3] = new List<Card>(Copy(state.Piles[3]));
+            Piles[4] = new List<Card>(Copy(state.Piles[4]));
+            Piles[5] = new List<Card>(Copy(state.Piles[5]));
+            Piles[6] = new List<Card>(Copy(state.Piles[6]));
 
             ResetCount = state.ResetCount;
+        }
+
+        public static List<Card> Copy(List<Card> c)
+        {
+            List<Card> cc = new List<Card>(c.Count);
+            for (int i = 0, count = c.Count; i < count; i++)
+            {
+                cc.Add(Card.Find(c[i].RealValue));
+            }
+            return cc;
         }
 
         public List<Card> TopHearts { get; set; }
@@ -495,7 +511,7 @@ namespace SolitareAStar
 
             return ComputeHash(bytes);
         }
-      
+
 
         private string DumpList(List<Card> cards)
         {
@@ -532,8 +548,8 @@ namespace SolitareAStar
                 case 9:
                 case 10:
                     return number.ToString();
-                case 11:return "J";
-                case 12:return "Q";
+                case 11: return "J";
+                case 12: return "Q";
                 case 13: return "K";
             }
             return "";
@@ -549,7 +565,7 @@ namespace SolitareAStar
             var count = cards.Count;
             for (int index = 0; index < count; index++)
             {
-                bytes[bInd++] = cards[index].Value();
+                bytes[bInd++] = cards[index].Value;
             }
             bytes[bInd++] = (255);
         }
@@ -557,17 +573,17 @@ namespace SolitareAStar
 
     public class Card
     {
-        private byte v;
-        private byte rv;
+        public byte Value;
+        public byte RealValue;
         static Card()
         {
-            cards=new Card[4*13*2+1];
+            cards = new Card[4 * 13 * 2 + 1];
             for (int i = 0; i < 4; i++)
             {
                 for (int c = 1; c <= 13; c++)
                 {
                     var card = new Card(CardFace.Up, (CardType)i, c);
-                    cards[card.RealValue()] = card;
+                    cards[card.RealValue] = card;
                 }
             }
 
@@ -576,7 +592,7 @@ namespace SolitareAStar
                 for (int c = 1; c <= 13; c++)
                 {
                     var card = new Card(CardFace.Down, (CardType)i, c);
-                    cards[card.RealValue()] = card;
+                    cards[card.RealValue] = card;
                 }
             }
         }
@@ -598,15 +614,15 @@ namespace SolitareAStar
             Color = (cardType == CardType.Club || cardType == CardType.Spade) ? CardColor.Black : CardColor.Red;
             Number = number;
             Type = cardType;
-            v = (byte)(Number + ((int)Type * 13));
+            Value = (byte)(Number + ((int)Type * 13));
             if (face == CardFace.Down)
             {
-                rv = (byte) (v + 52);
-                v = 0;
+                RealValue = (byte)(Value + 52);
+                Value = 0;
             }
             else
             {
-                rv = v;
+                RealValue = Value;
             }
         }
 
@@ -618,15 +634,6 @@ namespace SolitareAStar
         public override string ToString()
         {
             return $"Face: {Face},  Number: {Number}, Type: {Type}";
-        }
-
-        public byte Value()
-        {
-            return v;
-        }
-        public byte RealValue()
-        {
-            return rv;
         }
 
         public Card GetFaced(CardFace face)
