@@ -142,7 +142,11 @@ namespace SolitareAStar
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            s.Piles[index].LastOrDefault()?.SetFace(CardFace.Up);
+                            var ll = s.Piles[index].LastOrDefault();
+                            if (ll != null)
+                            {
+                                s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
+                            }
                             s.TopSpades.Add(p);
                             states.Add(s);
                         }
@@ -153,7 +157,11 @@ namespace SolitareAStar
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            s.Piles[index].LastOrDefault()?.SetFace(CardFace.Up);
+                            var ll = s.Piles[index].LastOrDefault();
+                            if (ll != null)
+                            {
+                                s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
+                            }
                             s.TopClubs.Add(p);
                             states.Add(s);
                         }
@@ -164,7 +172,11 @@ namespace SolitareAStar
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            s.Piles[index].LastOrDefault()?.SetFace(CardFace.Up);
+                            var ll = s.Piles[index].LastOrDefault();
+                            if (ll != null)
+                            {
+                                s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
+                            }
                             s.TopHearts.Add(p);
                             states.Add(s);
                         }
@@ -175,7 +187,11 @@ namespace SolitareAStar
                             var s = new SolitareState(solitareState);
                             var p = s.Piles[index][pile.Count - 1];
                             s.Piles[index].Remove(p);
-                            s.Piles[index].LastOrDefault()?.SetFace(CardFace.Up);
+                            var ll = s.Piles[index].LastOrDefault();
+                            if (ll != null)
+                            {
+                                s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
+                            }
                             s.TopDiamonds.Add(p);
                             states.Add(s);
                         }
@@ -244,9 +260,9 @@ namespace SolitareAStar
             {
                 var s = new SolitareState(solitareState);
                 var l = s.Deck.Last();
-                l.SetFace(CardFace.Up);
+                
                 s.Deck.Remove(l);
-                s.DeckDiscard.Add(l);
+                s.DeckDiscard.Add(l.GetFaced(CardFace.Up));
                 states.Add(s);
             }
             else
@@ -255,8 +271,7 @@ namespace SolitareAStar
                 s.ResetCount++;
                 for (int index = 0, c = s.DeckDiscard.Count; index < c; index++)
                 {
-                    var card = s.DeckDiscard[index];
-                    card.SetFace(CardFace.Down);
+                    s.DeckDiscard[index] = s.DeckDiscard[index].GetFaced(CardFace.Down);
                 }
                 s.Deck.AddRange(s.DeckDiscard);
                 s.DeckDiscard.Clear();
@@ -295,7 +310,12 @@ namespace SolitareAStar
                                     s.Piles[index].RemoveAt(j);
                                 }
 
-                                s.Piles[index].LastOrDefault()?.SetFace(CardFace.Up);
+
+                                var ll = s.Piles[index].LastOrDefault();
+                                if (ll != null)
+                                {
+                                    s.Piles[index][s.Piles[index].Count - 1] = ll.GetFaced(CardFace.Up);
+                                }
 
                                 states.Add(s);
                             }
@@ -338,7 +358,7 @@ namespace SolitareAStar
             {
                 for (int c = 1; c <= 13; c++)
                 {
-                    cards.Add(new Card(CardFace.Down, (CardType)i, c));
+                    cards.Add(Card.Find(CardFace.Down, (CardType)i, c));
                 }
             }
 
@@ -364,6 +384,7 @@ namespace SolitareAStar
             {
                 Piles[i] = new List<Card>();
             }
+
         }
 
         private int _score = -1;
@@ -388,19 +409,20 @@ namespace SolitareAStar
             return _score;
         }
 
+
         public SolitareState(SolitareState state)
         {
-            TopHearts = new List<Card>(state.TopHearts.Select(a => new Card(a.Face, a.Type, a.Number)));
-            TopDiamonds = new List<Card>(state.TopDiamonds.Select(a => new Card(a.Face, a.Type, a.Number)));
-            TopClubs = new List<Card>(state.TopClubs.Select(a => new Card(a.Face, a.Type, a.Number)));
-            TopSpades = new List<Card>(state.TopSpades.Select(a => new Card(a.Face, a.Type, a.Number)));
+            TopHearts = new List<Card>(state.TopHearts.Select(a => Card.Find(a.Face, a.Type, a.Number)));
+            TopDiamonds = new List<Card>(state.TopDiamonds.Select(a => Card.Find(a.Face, a.Type, a.Number)));
+            TopClubs = new List<Card>(state.TopClubs.Select(a => Card.Find(a.Face, a.Type, a.Number)));
+            TopSpades = new List<Card>(state.TopSpades.Select(a => Card.Find(a.Face, a.Type, a.Number)));
 
-            Deck = new List<Card>(state.Deck.Select(a => new Card(a.Face, a.Type, a.Number)));
-            DeckDiscard = new List<Card>(state.DeckDiscard.Select(a => new Card(a.Face, a.Type, a.Number)));
+            Deck = new List<Card>(state.Deck.Select(a => Card.Find(a.Face, a.Type, a.Number)));
+            DeckDiscard = new List<Card>(state.DeckDiscard.Select(a => Card.Find(a.Face, a.Type, a.Number)));
             Piles = new List<Card>[7];
             for (int i = 0; i < 7; i++)
             {
-                Piles[i] = new List<Card>(state.Piles[i].Select(a => new Card(a.Face, a.Type, a.Number)));
+                Piles[i] = new List<Card>(state.Piles[i].Select(a => Card.Find(a.Face, a.Type, a.Number)));
             }
 
             ResetCount = state.ResetCount;
@@ -532,16 +554,7 @@ namespace SolitareAStar
             var count = cards.Count;
             for (int index = 0; index < count; index++)
             {
-                var card = cards[index];
-                if (card.Face == CardFace.Down)
-                {
-                    bytes[bInd++] = (0);
-                }
-                else
-                {
-                    byte item = (byte)(card.Number + ((int)card.Type * 13));
-                    bytes[bInd++] = (item);
-                }
+                bytes[bInd++] = cards[index].Value();
             }
             bytes[bInd++] = (255);
         }
@@ -549,12 +562,52 @@ namespace SolitareAStar
 
     public class Card
     {
+        private byte v;
+        private byte rv;
+        static Card()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                for (int c = 1; c <= 13; c++)
+                {
+                    var card = new Card(CardFace.Up, (CardType)i, c);
+                    cards[card.RealValue()] = card;
+                }
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int c = 1; c <= 13; c++)
+                {
+                    var card = new Card(CardFace.Down, (CardType)i, c);
+                    cards[card.RealValue()] = card;
+                }
+            }
+        }
+
+        private static Dictionary<byte, Card> cards = new Dictionary<byte, Card>();
+
+        public static Card Find(CardFace face, CardType cardType, int number)
+        {
+            return cards[(byte) ((number + ((int) cardType*13)) + (face == CardFace.Down ? 52 : 0))];
+        }
+
         public Card(CardFace face, CardType cardType, int number)
         {
             Face = face;
             Color = (cardType == CardType.Club || cardType == CardType.Spade) ? CardColor.Black : CardColor.Red;
             Number = number;
             Type = cardType;
+            v = (byte)(Number + ((int)Type * 13));
+            if (face == CardFace.Down)
+            {
+                rv = (byte) (v + 52);
+                v = 0;
+            }
+            else
+            {
+                rv = v;
+            }
         }
 
         public CardFace Face { get; set; }
@@ -562,14 +615,23 @@ namespace SolitareAStar
         public int Number { get; set; }
         public CardType Type { get; set; }
 
-        public void SetFace(CardFace cardFace)
-        {
-            Face = cardFace;
-        }
-
         public override string ToString()
         {
             return $"Face: {Face},  Number: {Number}, Type: {Type}";
+        }
+
+        public byte Value()
+        {
+            return v;
+        }
+        public byte RealValue()
+        {
+            return rv;
+        }
+
+        public Card GetFaced(CardFace face)
+        {
+            return Find(face, Type, Number);
         }
     }
 
