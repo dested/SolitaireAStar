@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace SolitareAStar
+namespace SolitaireAStar
 {
     class Program
     {
@@ -16,24 +16,24 @@ namespace SolitareAStar
 
             HashSet<int> closedSet = new HashSet<int>();
 
-            SortedList<int, SolitareState> newStates = new SortedList<int, SolitareState>(new DuplicateKeyComparer<int>());
+            SortedList<int, SolitaireState> newStates = new SortedList<int, SolitaireState>(new DuplicateKeyComparer<int>());
 
             newStates.Add(initialState.GetScore(), initialState);
             int collision = 0;
             int iterations = 0;
-            List<SolitareState> cachedStates = new List<SolitareState>(50);
+            List<SolitaireState> cachedStates = new List<SolitaireState>(50);
 
             while (newStates.Count > 0)
             {
-                var solitareState = newStates.Last().Value;
+                var SolitaireState = newStates.Last().Value;
 
-                if (solitareState.GetScore() == int.MaxValue)
+                if (SolitaireState.GetScore() == int.MaxValue)
                 {
                     Console.WriteLine("WON " + (DateTime.Now - start));
                     Console.WriteLine("Iterations per second:" + (iterations / (DateTime.Now - start).TotalMilliseconds) * 1000);
                     Console.WriteLine(newStates.Count + " " + closedSet.Count + " " + collision);
 
-                    rebuild(solitareState);
+                    rebuild(SolitaireState);
                     Console.ReadLine();
                     return;
                 }
@@ -45,13 +45,13 @@ namespace SolitareAStar
                     Console.WriteLine(newStates.Count + " " + iterations + " " + closedSet.Count + " " + collision);
 
                     Console.WriteLine("Iterations per second:" + (iterations / (DateTime.Now - start).TotalMilliseconds) * 1000);
-//                    Console.WriteLine(solitareState.ToString());
+                    //                    Console.WriteLine(SolitaireState.ToString());
 
                 }
                 newStates.RemoveAt(newStates.Count - 1);
 
                 cachedStates.Clear();
-                oneTick(solitareState, cachedStates);
+                oneTick(SolitaireState, cachedStates);
                 var count = cachedStates.Count;
 
                 for (int index = 0; index < count; index++)
@@ -75,14 +75,14 @@ namespace SolitareAStar
             Console.ReadLine();
         }
 
-        private static void rebuild(SolitareState solitareState)
+        private static void rebuild(SolitaireState SolitaireState)
         {
-            List<SolitareState> states = new List<SolitareState>();
-            states.Add(solitareState);
-            while (solitareState.copyState != null)
+            List<SolitaireState> states = new List<SolitaireState>();
+            states.Add(SolitaireState);
+            while (SolitaireState.copyState != null)
             {
-                states.Insert(0, solitareState.copyState);
-                solitareState = solitareState.copyState;
+                states.Insert(0, SolitaireState.copyState);
+                SolitaireState = SolitaireState.copyState;
             }
             foreach (var state in states)
             {
@@ -91,27 +91,27 @@ namespace SolitareAStar
             }
         }
 
-        private static void oneTick(SolitareState solitareState, List<SolitareState> cache)
+        private static void oneTick(SolitaireState SolitaireState, List<SolitaireState> cache)
         {
-            tryMoveFromDiscard(solitareState, cache);
-            tryMoveToTop(solitareState, cache);
-            tryPopDeck(solitareState, cache);
-            tryMovePiles(solitareState, cache);
-             
-             
+            tryMoveFromDiscard(SolitaireState, cache);
+            tryMoveToTop(SolitaireState, cache);
+            tryPopDeck(SolitaireState, cache);
+            tryMovePiles(SolitaireState, cache);
+
+
         }
 
-        private static void tryMoveFromDiscard(SolitareState solitareState, List<SolitareState> cache)
+        private static void tryMoveFromDiscard(SolitaireState SolitaireState, List<SolitaireState> cache)
         {
-             
-            if (solitareState.DeckDiscard.Length == 0) return ;
-            var topCard = solitareState.DeckDiscard.FastLast();
+
+            if (SolitaireState.DeckDiscard.Length == 0) return;
+            var topCard = SolitaireState.DeckDiscard.FastLast();
             for (int index = 0; index < 7; index++)
             {
-                var pile = solitareState.Piles[index];
+                var pile = SolitaireState.Piles[index];
                 if (cardFits(pile.FastLastOrDefault(), topCard))
                 {
-                    var s = new SolitareState(solitareState);
+                    var s = new SolitaireState(SolitaireState);
 
                     s.CopyDiscard();
                     s.CopyPile(index);
@@ -120,7 +120,7 @@ namespace SolitareAStar
                     Utilities.Add(ref s.Piles[index], top);
                     cache.Add(s);
                 }
-            } 
+            }
         }
 
         private static bool cardFits(Card top, Card bottom)
@@ -140,12 +140,12 @@ namespace SolitareAStar
             return top.Number == bottom.Number - 1 && type == bottom.Type;
         }
 
-        private static void tryMoveToTop(SolitareState solitareState, List<SolitareState> cache)
-        { 
+        private static void tryMoveToTop(SolitaireState SolitaireState, List<SolitaireState> cache)
+        {
             Card l;
             for (int index = 0; index < 7; index++)
             {
-                var pile = solitareState.Piles[index];
+                var pile = SolitaireState.Piles[index];
                 if (pile.Length == 0)
                 {
                     continue;
@@ -154,9 +154,9 @@ namespace SolitareAStar
                 switch (l.Type)
                 {
                     case CardType.Spade:
-                        if (cardFitsTop(solitareState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
+                        if (cardFitsTop(SolitaireState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyPile(index);
                             s.CopyTopSpades();
 
@@ -172,9 +172,9 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Club:
-                        if (cardFitsTop(solitareState.TopClubs.FastLastOrDefault(), CardType.Club, l))
+                        if (cardFitsTop(SolitaireState.TopClubs.FastLastOrDefault(), CardType.Club, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyPile(index);
                             s.CopyTopClubs();
 
@@ -191,9 +191,9 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Heart:
-                        if (cardFitsTop(solitareState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
+                        if (cardFitsTop(SolitaireState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyPile(index);
                             s.CopyTopHearts();
 
@@ -210,9 +210,9 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Diamond:
-                        if (cardFitsTop(solitareState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
+                        if (cardFitsTop(SolitaireState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyPile(index);
                             s.CopyTopDiamonds();
 
@@ -232,15 +232,15 @@ namespace SolitareAStar
                         throw new ArgumentOutOfRangeException();
                 }
             }
-            if (solitareState.DeckDiscard.Length > 0)
+            if (SolitaireState.DeckDiscard.Length > 0)
             {
-                l = solitareState.DeckDiscard.FastLast();
+                l = SolitaireState.DeckDiscard.FastLast();
                 switch (l.Type)
                 {
                     case CardType.Spade:
-                        if (cardFitsTop(solitareState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
+                        if (cardFitsTop(SolitaireState.TopSpades.FastLastOrDefault(), CardType.Spade, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyDiscard();
                             s.CopyTopSpades();
 
@@ -250,9 +250,9 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Club:
-                        if (cardFitsTop(solitareState.TopClubs.FastLastOrDefault(), CardType.Club, l))
+                        if (cardFitsTop(SolitaireState.TopClubs.FastLastOrDefault(), CardType.Club, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyDiscard();
                             s.CopyTopClubs();
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
@@ -261,9 +261,9 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Heart:
-                        if (cardFitsTop(solitareState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
+                        if (cardFitsTop(SolitaireState.TopHearts.FastLastOrDefault(), CardType.Heart, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyDiscard();
                             s.CopyTopHearts();
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
@@ -272,9 +272,9 @@ namespace SolitareAStar
                         }
                         break;
                     case CardType.Diamond:
-                        if (cardFitsTop(solitareState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
+                        if (cardFitsTop(SolitaireState.TopDiamonds.FastLastOrDefault(), CardType.Diamond, l))
                         {
-                            var s = new SolitareState(solitareState);
+                            var s = new SolitaireState(SolitaireState);
                             s.CopyDiscard();
                             s.CopyTopDiamonds();
                             var p = Utilities.RemoveLast(ref s.DeckDiscard);
@@ -286,14 +286,14 @@ namespace SolitareAStar
                         throw new ArgumentOutOfRangeException();
                 }
             }
-             
+
         }
 
-        private static void tryPopDeck(SolitareState solitareState, List<SolitareState> cache)
-        { 
-            if (solitareState.Deck.Length > 0)
+        private static void tryPopDeck(SolitaireState SolitaireState, List<SolitaireState> cache)
+        {
+            if (SolitaireState.Deck.Length > 0)
             {
-                var s = new SolitareState(solitareState);
+                var s = new SolitaireState(SolitaireState);
                 s.CopyDiscard();
                 s.CopyDeck();
                 var l = Utilities.RemoveLast(ref s.Deck);
@@ -302,7 +302,7 @@ namespace SolitareAStar
             }
             else
             {
-                var s = new SolitareState(solitareState);
+                var s = new SolitaireState(SolitaireState);
                 s.CopyDiscard();
                 s.CopyDeck();
 
@@ -314,15 +314,15 @@ namespace SolitareAStar
                 s.Deck = s.DeckDiscard;
                 s.DeckDiscard = new Card[0];
                 cache.Add(s);
-            } 
+            }
         }
 
-        private static void tryMovePiles(SolitareState solitareState, List<SolitareState> cache)
-        { 
+        private static void tryMovePiles(SolitaireState SolitaireState, List<SolitaireState> cache)
+        {
 
             for (int index = 0; index < 7; index++)
             {
-                var pile = solitareState.Piles[index];
+                var pile = SolitaireState.Piles[index];
 
                 for (int i = 1, count = pile.Length; i < count; i++)
                 {
@@ -333,10 +333,11 @@ namespace SolitareAStar
                         {
                             if (pindex == index) continue;
 
-                            var innerPile = solitareState.Piles[pindex];
-                            if (cardFits(innerPile.FastLastOrDefault(), card))
+                            var innerPile = SolitaireState.Piles[pindex];
+                            var f = innerPile.FastLastOrDefault();
+                            if (cardFits(f, card))
                             {
-                                var s = new SolitareState(solitareState);
+                                var s = new SolitaireState(SolitaireState);
                                 s.CopyPile(index);
                                 s.CopyPile(pindex);
 
@@ -363,12 +364,12 @@ namespace SolitareAStar
                         break;
                     }
                 }
-            } 
+            }
         }
 
-        private static SolitareState setupInitial()
+        private static SolitaireState setupInitial()
         {
-            var initialState = new SolitareState();
+            var initialState = new SolitaireState();
             initialState.Deck = NewDeck();
             var deck = new List<Card>(NewDeck());
             for (int a = 0; a < 7; a++)
@@ -379,7 +380,8 @@ namespace SolitareAStar
                     var c = deck[index];
                     if (i == a)
                     {
-                        c.Face = CardFace.Up;
+                        c = c.GetFaced(CardFace.Up);
+                        deck[index] = c;
                     }
                     Utilities.Add(ref initialState.Piles[i], c);
                     deck.RemoveAt(index);
@@ -404,9 +406,9 @@ namespace SolitareAStar
         }
     }
 
-    public class SolitareState
+    public class SolitaireState
     {
-        public SolitareState()
+        public SolitaireState()
         {
             TopHearts = new Card[0];
             TopDiamonds = new Card[0];
@@ -447,7 +449,7 @@ namespace SolitareAStar
         }
 
 
-        public SolitareState(SolitareState state)
+        public SolitaireState(SolitaireState state)
         {
             Piles = new Card[7][];
 
@@ -483,7 +485,7 @@ namespace SolitareAStar
             return cc;
         }
 
-        public SolitareState copyState;
+        public SolitaireState copyState;
 
         public Card[] TopHearts;
         public Card[] TopDiamonds;
@@ -535,24 +537,28 @@ namespace SolitareAStar
         }
         static byte[] bytes = new byte[65];
 
-        public override int GetHashCode()
+        public unsafe override int GetHashCode()
         {
+            fixed (byte* bt = &bytes[0])
+            {
+                var bts = bt;
 
-            int bInd = 0;
-            DumpFastList(TopHearts, bytes, ref bInd);
-            DumpFastList(TopDiamonds, bytes, ref bInd);
-            DumpFastList(TopSpades, bytes, ref bInd);
-            DumpFastList(TopClubs, bytes, ref bInd);
-            DumpFastList(Deck, bytes, ref bInd);
-            DumpFastList(DeckDiscard, bytes, ref bInd);
 
-            DumpFastList(Piles[0], bytes, ref bInd);
-            DumpFastList(Piles[1], bytes, ref bInd);
-            DumpFastList(Piles[2], bytes, ref bInd);
-            DumpFastList(Piles[3], bytes, ref bInd);
-            DumpFastList(Piles[4], bytes, ref bInd);
-            DumpFastList(Piles[5], bytes, ref bInd);
-            DumpFastList(Piles[6], bytes, ref bInd);
+                DumpFastList(TopHearts, ref bts);
+                DumpFastList(TopDiamonds, ref bts);
+                DumpFastList(TopSpades, ref bts);
+                DumpFastList(TopClubs, ref bts);
+                DumpFastList(Deck, ref bts);
+                DumpFastList(DeckDiscard, ref bts);
+
+                DumpFastList(Piles[0], ref bts);
+                DumpFastList(Piles[1], ref bts);
+                DumpFastList(Piles[2], ref bts);
+                DumpFastList(Piles[3], ref bts);
+                DumpFastList(Piles[4], ref bts);
+                DumpFastList(Piles[5], ref bts);
+                DumpFastList(Piles[6], ref bts);
+            }
 
             return ComputeHash(bytes);
         }
@@ -600,19 +606,20 @@ namespace SolitareAStar
             return "";
         }
 
-        private void DumpFastList(Card[] cards, byte[] bytes, ref int bInd)
+        private unsafe void DumpFastList(Card[] cards, ref byte* bytes)
         {
             if (cards.Length == 0)
             {
-                bytes[bInd++] = (255);
+                *(bytes++) = (255);
                 return;
             }
             var count = cards.Length;
             for (int index = 0; index < count; index++)
             {
-                bytes[bInd++] = cards[index].Value;
+                var value = cards[index].Value;
+                *(bytes++) = value;
             }
-            bytes[bInd++] = (255);
+            *(bytes++) = (255);
         }
 
         public void CopyDiscard()
@@ -624,19 +631,19 @@ namespace SolitareAStar
             Piles[index] = (Copy(copyState.Piles[index]));
         }
 
-        public void CopyTopSpades(  )
+        public void CopyTopSpades()
         {
             TopSpades = (Copy(copyState.TopSpades));
         }
-        public void CopyTopClubs( )
+        public void CopyTopClubs()
         {
             TopClubs = (Copy(copyState.TopClubs));
         }
-        public void CopyTopDiamonds( )
+        public void CopyTopDiamonds()
         {
-            TopDiamonds= (Copy(copyState.TopDiamonds));
+            TopDiamonds = (Copy(copyState.TopDiamonds));
         }
-        public void CopyTopHearts( )
+        public void CopyTopHearts()
         {
             TopHearts = (Copy(copyState.TopHearts));
         }
@@ -699,10 +706,10 @@ namespace SolitareAStar
             }
         }
 
-        public CardFace Face;
-        public CardColor Color;
-        public int Number;
-        public CardType Type;
+        public readonly CardFace Face;
+        public readonly CardColor Color;
+        public readonly int Number;
+        public readonly CardType Type;
 
         public override string ToString()
         {
