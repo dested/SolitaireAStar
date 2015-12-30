@@ -5,6 +5,29 @@ using System.Text;
 
 namespace SolitareAStar
 {
+    /// <summary>
+    /// Comparer for comparing two keys, handling equality as beeing greater
+    /// Use this Comparer e.g. with SortedLists or SortedDictionaries, that don't allow duplicate keys
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    public class DuplicateKeyComparer<TKey>
+                    :
+                 IComparer<TKey> where TKey : IComparable
+    {
+        #region IComparer<TKey> Members
+
+        public int Compare(TKey x, TKey y)
+        {
+            int result = x.CompareTo(y);
+
+            if (result == 0)
+                return 1;   // Handle equality as beeing greater
+            else
+                return result;
+        }
+
+        #endregion
+    }
     class Program
     {
         static Random random = new Random(16);
@@ -16,13 +39,14 @@ namespace SolitareAStar
 
             HashSet<int> closedSet = new HashSet<int>();
 
-            List<SolitareState> newStates = new List<SolitareState>();
-            newStates.Add(initialState);
+            SortedList<int, SolitareState> newStates = new SortedList<int, SolitareState>(new DuplicateKeyComparer<int>());
+
+            newStates.Add(initialState.GetScore(),initialState);
             int collision = 0;
             int iterations = 0;
             while (newStates.Count > 0)
             {
-                var solitareState = newStates[0];
+                var solitareState = newStates.Last().Value;
 
                 if (solitareState.GetScore() == int.MaxValue)
                 {
@@ -44,7 +68,7 @@ namespace SolitareAStar
                     Console.WriteLine(solitareState.ToString());
 
                 }
-                newStates.Remove(solitareState);
+                newStates.RemoveAt(newStates.Count-1);
 
                 var solitareStates = oneTick(solitareState);
                 var count = solitareStates.Count;
@@ -56,14 +80,14 @@ namespace SolitareAStar
                     if (!closedSet.Contains(item))
                     {
                         closedSet.Add(item);
-                        newStates.Add(state);
+                        newStates.Add(state.GetScore(),state);
                     }
                     else
                     {
                         collision++;
                     }
                 }
-                newStates = newStates.OrderByDescending(a => a.GetScore()).ToList();
+                
             }
             Console.WriteLine("LOST " + (DateTime.Now - start));
             Console.WriteLine("Iterations per second:" + (iterations / (DateTime.Now - start).TotalMilliseconds) * 1000);
