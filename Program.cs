@@ -617,10 +617,10 @@ namespace SolitareAStar
             }
         }
 
-        public CardFace Face { get; set; }
-        public CardColor Color { get; set; }
-        public int Number { get; set; }
-        public CardType Type { get; set; }
+        public CardFace Face;
+        public CardColor Color;
+        public int Number;
+        public CardType Type;
 
         public override string ToString()
         {
