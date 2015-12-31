@@ -134,7 +134,7 @@ namespace SolitaireAStar
 
         private static bool cardFits(Card top, Card bottom)
         {
-            if (top == null)
+            if (top .Value==0)
             {
                 return bottom.Number == 13;
             }
@@ -142,7 +142,7 @@ namespace SolitaireAStar
         }
         private static bool cardFitsTop(Card top, int type, Card bottom)
         {
-            if (top == null)
+            if (top.Value == 0)
             {
                 return bottom.Number == 1 && type == bottom.Type;
             }
@@ -172,7 +172,7 @@ namespace SolitaireAStar
                     var items = s.Piles[index];
                     if (items.Length > 0)
                     {
-                        s.PileFaceDown[index] = (byte) (items.Length - 1);
+                        s.PileFaceDown[index] = (byte)(items.Length - 1);
                     }
                     Utilities.Add(ref s.Top[type], p);
                     cache.Add(s);
@@ -253,7 +253,7 @@ namespace SolitaireAStar
 
                             if (cards.Length > 0)
                             {
-                                s.PileFaceDown[index] = (byte) (cards.Length - 1);
+                                s.PileFaceDown[index] = (byte)(cards.Length - 1);
                             }
 
                             cache.Add(s);
@@ -569,9 +569,13 @@ namespace SolitaireAStar
         }
     }
 
-    public class Card
+    public struct Card
     {
-        public byte Value;
+        public readonly byte Value;
+        public readonly CardColor Color;
+        public readonly int Number;
+        public readonly int Type;
+
         static Card()
         {
             cards = new Card[4 * 13 + 1];
@@ -587,24 +591,20 @@ namespace SolitaireAStar
         }
 
         public static Card[] cards;
+        public static Card Default = new Card(0, 0);
 
         public static Card Find(int cardType, int number)
         {
             return cards[((number + (cardType * 13)))];
         }
-
-
         public Card(int cardType, int number)
         {
             Color = (cardType == CardType.Club || cardType == CardType.Spade) ? CardColor.Black : CardColor.Red;
             Number = number;
             Type = cardType;
-            Value = (byte)(Number + ((int)Type * 13));
+            Value = (byte)(Number + (Type * 13));
         }
 
-        public readonly CardColor Color;
-        public readonly int Number;
-        public readonly int Type;
 
         public override string ToString()
         {
@@ -632,13 +632,13 @@ namespace SolitaireAStar
         public static Card FastLastOrDefault(this Card[] items)
         {
             var count = items.Length;
-            if (count == 0) return null;
+            if (count == 0) return Card.Default;
             return items[count - 1];
         }
         public static Card FastLast(this Card[] items)
         {
             var count = items.Length;
-            if (count == 0) return null;
+            if (count == 0) return Card.Default;
             return items[count - 1];
         }
         public static int FastSum(this Card[][] items, SolitaireState solitaireState)
