@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace SolitaireAStar
@@ -56,8 +57,8 @@ namespace SolitaireAStar
                 newStates.RemoveAt(newStates.Count - 1);
 
                 cachedStates.Clear();
-//                                Console.WriteLine(SolitaireState.ToString());
-//                                Console.ReadLine();
+                //                                Console.WriteLine(SolitaireState.ToString());
+                //                                Console.ReadLine();
                 oneTick(SolitaireState, cachedStates);
                 var count = cachedStates.Count;
 
@@ -104,19 +105,16 @@ namespace SolitaireAStar
             tryMoveToTop(SolitaireState, cache);
             tryPopDeck(SolitaireState, cache);
             tryMovePiles(SolitaireState, cache);
-
-
         }
 
         private static void tryMoveFromDiscard(SolitaireState SolitaireState, List<SolitaireState> cache)
         {
 
             if (SolitaireState.DeckDiscard.Length == 0) return;
-            var topCard = SolitaireState.DeckDiscard.FastLast();
+            var topCard = SolitaireState.DeckDiscardLast;
             for (int index = 0; index < 7; index++)
             {
-                var pile = SolitaireState.Piles[index];
-                if (cardFits(pile.FastLastOrDefault(), topCard))
+                if (cardFits(SolitaireState.PilesLast[index], topCard))
                 {
                     var s = new SolitaireState(SolitaireState);
 
@@ -124,29 +122,22 @@ namespace SolitaireAStar
                     s.CopyPile(index);
 
                     var top = Utilities.RemoveLast(ref s.DeckDiscard);
+
+                    if (s.DeckDiscard.Length == 0)
+                    {
+                        s.DeckDiscardLast = Utilities.CardDefault;
+                    }
+                    else
+                    {
+                        s.DeckDiscardLast = s.DeckDiscard[s.DeckDiscard.Length - 1];
+                    }
+
                     Utilities.Add(ref s.Piles[index], top);
+                    s.PilesLast[index] = top;
                     cache.Add(s);
                 }
             }
         }
-
-        private static bool cardFits(byte top, byte bottom)
-        {
-            if (top == 255)
-            {
-                return bottom % 13 == 0;
-            }
-            return top / 26 != bottom / 26 && top % 13 == bottom % 13 + 1;
-        }
-        private static bool cardFitsTop(byte top, int type, byte bottom)
-        {
-            if (top == 255)
-            {
-                return bottom % 13 == 0 && type == bottom / 13;
-            }
-            return top % 13 == bottom % 13 - 1 && type == bottom / 13;
-        }
-
         private static void tryMoveToTop(SolitaireState SolitaireState, List<SolitaireState> cache)
         {
             byte l;
@@ -157,10 +148,10 @@ namespace SolitaireAStar
                 {
                     continue;
                 }
-                l = pile.FastLast();
+                l = SolitaireState.PilesLast[index];
 
                 var type = l / 13;
-                if (cardFitsTop(SolitaireState.Top[type].FastLastOrDefault(), type, l))
+                if (cardFitsTop(SolitaireState.TopLast[type], type, l))
                 {
                     var s = new SolitaireState(SolitaireState);
                     s.CopyPile(index);
@@ -168,26 +159,48 @@ namespace SolitaireAStar
 
                     var p = Utilities.RemoveLast(ref s.Piles[index]);
                     var items = s.Piles[index];
+                    if (items.Length == 0)
+                    {
+                        s.PilesLast[index] = Utilities.CardDefault;
+                    }
+                    else
+                    {
+                        s.PilesLast[index] = items[items.Length - 1];
+                    }
+
                     if (items.Length > 0)
                     {
                         s.PileFaceDown[index] = (byte)(items.Length - 1);
                     }
+
                     Utilities.Add(ref s.Top[type], p);
+                    s.TopLast[type] = p;
+
                     cache.Add(s);
                 }
             }
             if (SolitaireState.DeckDiscard.Length > 0)
             {
-                l = SolitaireState.DeckDiscard.FastLast();
-                var type = l/ 13;
-                if (cardFitsTop(SolitaireState.Top[type].FastLastOrDefault(), type, l))
+                l = SolitaireState.DeckDiscardLast;
+                var type = l / 13;
+                if (cardFitsTop(SolitaireState.TopLast[type], type, l))
                 {
                     var s = new SolitaireState(SolitaireState);
                     s.CopyDiscard();
                     s.CopyTop(type);
 
                     var p = Utilities.RemoveLast(ref s.DeckDiscard);
+                    if (s.DeckDiscard.Length == 0)
+                    {
+                        s.DeckDiscardLast = Utilities.CardDefault;
+                    }
+                    else
+                    {
+                        s.DeckDiscardLast = s.DeckDiscard[s.DeckDiscard.Length - 1];
+                    }
                     Utilities.Add(ref s.Top[type], p);
+                    s.TopLast[type] = p;
+
                     cache.Add(s);
                 }
             }
@@ -201,7 +214,17 @@ namespace SolitaireAStar
                 var s = new SolitaireState(SolitaireState);
                 s.CopyDiscard();
                 s.CopyDeck();
-                Utilities.Add(ref s.DeckDiscard, Utilities.RemoveLast(ref s.Deck));
+                var l = Utilities.RemoveLast(ref s.Deck);
+                if (s.Deck.Length == 0)
+                {
+                    s.DeckLast = Utilities.CardDefault;
+                }
+                else
+                {
+                    s.DeckLast = s.Deck[s.Deck.Length - 1];
+                }
+                Utilities.Add(ref s.DeckDiscard, l);
+                s.DeckDiscardLast = l;
                 cache.Add(s);
             }
             else
@@ -209,10 +232,11 @@ namespace SolitaireAStar
                 var s = new SolitaireState(SolitaireState);
                 s.CopyDiscard();
                 s.CopyDeck();
-
                 s.ResetCount++;
                 s.Deck = s.DeckDiscard;
                 Array.Resize(ref s.DeckDiscard, 0);
+                s.DeckLast = s.Deck[s.Deck.Length - 1];
+                s.DeckDiscardLast = Utilities.CardDefault;
                 cache.Add(s);
             }
         }
@@ -232,9 +256,7 @@ namespace SolitaireAStar
                     {
                         if (pindex == index) continue;
 
-                        var innerPile = SolitaireState.Piles[pindex];
-                        var f = innerPile.FastLastOrDefault();
-                        if (cardFits(f, card))
+                        if (cardFits(SolitaireState.PilesLast[pindex], card))
                         {
                             var s = new SolitaireState(SolitaireState);
                             s.CopyPile(index);
@@ -247,6 +269,24 @@ namespace SolitaireAStar
                             Array.Resize(ref s.Piles[pindex], l + newSize);
                             Array.ConstrainedCopy(cards, faceDownIndex, s.Piles[pindex], l, newSize);
                             Utilities.Resize(ref s.Piles[index], faceDownIndex);
+                            if (s.Piles[pindex].Length == 0)
+                            {
+                                s.PilesLast[pindex] = Utilities.CardDefault;
+                            }
+                            else
+                            {
+                                s.PilesLast[pindex] = s.Piles[pindex][s.Piles[pindex].Length - 1];
+                            }
+
+                            if (s.Piles[index].Length == 0)
+                            {
+                                s.PilesLast[index] = Utilities.CardDefault;
+                            }
+                            else
+                            {
+                                s.PilesLast[index] = s.Piles[index][s.Piles[index].Length - 1];
+                            }
+
                             cards = s.Piles[index];
 
                             if (cards.Length > 0)
@@ -257,45 +297,70 @@ namespace SolitaireAStar
                             cache.Add(s);
                         }
                     }
-
-
                 }
-
-
             }
         }
+        private static bool cardFits(byte top, byte bottom)
+        {
+            if (top == 255)
+            {
+                return bottom % 13 == 0;
+            }
+            return top / 26 != bottom / 26 && top % 13 == bottom % 13 + 1;
+        }
+        private static bool cardFitsTop(byte top, int type, byte bottom)
+        {
+            if (top == 255)
+            {
+                return bottom % 13 == 0 && type == bottom / 13;
+            }
+            return top % 13 == bottom % 13 - 1 && type == bottom / 13;
+        }
+
+
 
         private static SolitaireState setupInitial()
         {
             var initialState = new SolitaireState();
             initialState.Deck = NewDeck();
-            var deck = new List<byte>(NewDeck());
+            var deck = NewDeck();
             for (byte a = 0; a < 7; a++)
             {
                 for (int i = a; i < 7; i++)
                 {
-                    var index = deck.Count - 1;
+                    var index = deck.Length - 1;
                     var c = deck[index];
                     if (i == a)
                     {
                         initialState.PileFaceDown[i] = a;
                     }
                     Utilities.Add(ref initialState.Piles[i], c);
-                    deck.RemoveAt(index);
+                    Utilities.RemoveLast(ref deck);
                 }
             }
+            for (int i = 0; i < 7; i++)
+            {
+                initialState.PilesLast[i] = initialState.Piles[i][initialState.Piles[i].Length - 1];
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                initialState.TopLast[i] = Utilities.CardDefault;
+            }
             initialState.Deck = deck.ToArray();
+            initialState.DeckDiscardLast = Utilities.CardDefault;
+            initialState.DeckLast = initialState.Deck[initialState.Deck.Length - 1];
+
             return initialState;
         }
 
         private static byte[] NewDeck()
         {
-            List<byte> cards = new List<byte>();
-            for (int i = 0; i < 4; i++)
+            byte[] cards = new byte[52];
+            for (byte i = 0; i < 4; i++)
             {
-                for (int c = 0; c < 13; c++)
+                for (byte c = 0; c < 13; c++)
                 {
-                    cards.Add((byte)((c + (i * 13))));
+                    cards[c + (i * 13)] = (byte)(c + (i * 13));
                 }
             }
             //            cards = cards.OrderBy(a => random.Next()).ToList();
@@ -308,6 +373,8 @@ namespace SolitaireAStar
         public byte[] PileFaceDown;
         public SolitaireState()
         {
+
+
             Top = new byte[4][];
             Top[0] = new byte[0];
             Top[1] = new byte[0];
@@ -318,6 +385,10 @@ namespace SolitaireAStar
             DeckDiscard = new byte[0];
             Piles = new byte[7][];
             PileFaceDown = new byte[7];
+
+
+            TopLast = new byte[4];
+            PilesLast = new byte[7];
 
             for (int i = 0; i < 7; i++)
             {
@@ -366,19 +437,30 @@ namespace SolitaireAStar
             PileFaceDown = new byte[7];
             Top = new byte[4][];
 
-            Top[CardType.Heart] = state.Top[CardType.Heart];
-            Top[CardType.Diamond] = state.Top[CardType.Diamond];
-            Top[CardType.Club] = state.Top[CardType.Club];
-            Top[CardType.Spade] = state.Top[CardType.Spade];
+            TopLast = new byte[4];
+            PilesLast = new byte[7];
+
+            for (int i = 0; i < 4; i++)
+            {
+                Top[i] = state.Top[i];
+                TopLast[i] = state.TopLast[i];
+            }
 
             Deck = state.Deck;
+            DeckLast = state.DeckLast;
+
             DeckDiscard = state.DeckDiscard;
+            DeckDiscardLast = state.DeckDiscardLast;
 
             for (int i = 0; i < 7; i++)
             {
                 Piles[i] = state.Piles[i];
+                PilesLast[i] = state.PilesLast[i];
+
                 PileFaceDown[i] = state.PileFaceDown[i];
             }
+
+
 
             copyState = state;
             ResetCount = state.ResetCount;
@@ -397,6 +479,13 @@ namespace SolitaireAStar
         public byte[] Deck;
         public byte[] DeckDiscard;
         public byte[][] Piles;
+
+        public byte DeckDiscardLast;
+        public byte DeckLast;
+        public byte[] TopLast;
+        public byte[] PilesLast;
+
+
         public int ResetCount;
 
         public override string ToString()
@@ -423,28 +512,23 @@ namespace SolitaireAStar
 
         static byte[] bytes = new byte[72];
 
-        public unsafe override int GetHashCode()
+        public override int GetHashCode()
         {
-            fixed (byte* bt = &bytes[0])
+            byte pointer = 0;
+
+            DumpFastList(Top[CardType.Spade], bytes, ref pointer);
+            DumpFastList(Top[CardType.Club], bytes, ref pointer);
+            DumpFastList(Top[CardType.Heart], bytes, ref pointer);
+            DumpFastList(Top[CardType.Diamond], bytes, ref pointer);
+
+            DumpFastList(Deck, bytes, ref pointer);
+            DumpFastList(DeckDiscard, bytes, ref pointer);
+
+            for (int i = 0; i < 7; i++)
             {
-                var bts = bt;
-
-
-                DumpFastList(Top[CardType.Spade], ref bts);
-                DumpFastList(Top[CardType.Club], ref bts);
-                DumpFastList(Top[CardType.Heart], ref bts);
-                DumpFastList(Top[CardType.Diamond], ref bts);
-
-                DumpFastList(Deck, ref bts);
-                DumpFastList(DeckDiscard, ref bts);
-
-                for (int i = 0; i < 7; i++)
-                {
-                    DumpFastList(Piles[i], ref bts);
-                    (*bts++) = PileFaceDown[i];
-                }
+                DumpFastList(Piles[i], bytes, ref pointer);
+                bytes[pointer++] = PileFaceDown[i];
             }
-
             return ComputeHash(bytes);
         }
         public static int ComputeHash(byte[] data)
@@ -452,10 +536,9 @@ namespace SolitaireAStar
             unchecked
             {
                 int hash = 17;
-                for (int index = 0; index < data.Length; index++)
+                for (int index = 0; index < 72; index++)
                 {
-                    var value = data[index];
-                    hash = hash * 23 + value.GetHashCode();
+                    hash = hash * 23 + data[index];
                 }
 
                 return hash;
@@ -541,20 +624,21 @@ namespace SolitaireAStar
             return "";
         }
 
-        private unsafe void DumpFastList(byte[] cards, ref byte* bytes)
+        private void DumpFastList(byte[] cards, byte[] bytes, ref byte pointer)
         {
-            if (cards.Length == 0)
+            var length = cards.Length;
+            if (length == 0)
             {
-                *(bytes++) = (255);
+                bytes[pointer++] = (255);
                 return;
             }
             var count = cards.Length;
             for (int index = 0; index < count; index++)
             {
-                var value = cards[index];
-                *(bytes++) = value;
+                bytes[pointer++] = cards[index];
             }
-            *(bytes++) = (255);
+
+            bytes[pointer++] = (255);
         }
 
         public void CopyDiscard()
@@ -576,7 +660,7 @@ namespace SolitaireAStar
             Deck = (Copy(copyState.Deck));
         }
     }
-     
+
 
     public enum CardColor
     {
@@ -594,19 +678,8 @@ namespace SolitaireAStar
 
     public static class Utilities
     {
-        private static byte CardDefault = 255;
-        public static byte FastLastOrDefault(this byte[] items)
-        {
-            var count = items.Length;
-            if (count == 0) return CardDefault;
-            return items[count - 1];
-        }
-        public static byte FastLast(this byte[] items)
-        {
-            var count = items.Length;
-            if (count == 0) return CardDefault;
-            return items[count - 1];
-        }
+        public static byte CardDefault = 255;
+
         public static void Add(ref byte[] items, byte card)
         {
             var newSize = items.Length;
